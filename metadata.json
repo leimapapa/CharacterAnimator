@@ -1,0 +1,7 @@
+{
+  "name": "PiggyMotion Character Puppeteer",
+  "description": "Real-time puppeteering and multi-layer animation studio for SVG characters with webcam tracking and timeline stacking.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
