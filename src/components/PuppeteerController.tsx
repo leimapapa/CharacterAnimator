@@ -47,6 +47,10 @@ interface PuppeteerControllerProps {
   onSetStartPosition?: (limbId: LimbId) => void;
   onResetToStartPosition?: (limbId: LimbId) => void;
   startPositionFeedback?: string | null;
+  activeConfigs?: Record<LimbId, any>;
+  activePivots?: Record<LimbId, { x: number; y: number }>;
+  activePivotPresets?: Partial<Record<LimbId, { label: string; x: number; y: number }[]>>;
+  characterType?: 'piggy' | 'death' | 'custom';
 }
 
 export const PuppeteerController: React.FC<PuppeteerControllerProps> = ({
@@ -75,11 +79,18 @@ export const PuppeteerController: React.FC<PuppeteerControllerProps> = ({
   onSetStartPosition,
   onResetToStartPosition,
   startPositionFeedback,
+  activeConfigs,
+  activePivots,
+  activePivotPresets,
+  characterType = 'piggy',
 }) => {
   const [activeTab, setActiveTab] = useState<'manual' | 'webcam' | 'presets'>('manual');
 
-  const activeConfig = selectedLimb ? LIMB_CONFIGS[selectedLimb] : null;
+  const configsMap = activeConfigs || LIMB_CONFIGS;
+  const activeConfig = selectedLimb ? configsMap[selectedLimb] : null;
   const limbPose = selectedLimb ? currentPose[selectedLimb] : null;
+  const defaultPivotsMap = activePivots || DEFAULT_PIVOTS;
+  const presetsMap = activePivotPresets || PIVOT_PRESETS;
 
   return (
     <div className="flex flex-col h-full bg-neutral-900/90 border border-neutral-800 rounded-xl overflow-hidden backdrop-blur-md">
@@ -322,11 +333,11 @@ export const PuppeteerController: React.FC<PuppeteerControllerProps> = ({
                 {/* Center of Motion (Pivot Point) Setting */}
                 {(() => {
                   const currentPivot = pivots[selectedLimb] ?? activeConfig.pivot;
-                  const defaultPivot = DEFAULT_PIVOTS[selectedLimb] ?? activeConfig.pivot;
+                  const defaultPivot = defaultPivotsMap[selectedLimb] ?? activeConfig.pivot;
                   const isCustomPivot =
                     Math.round(currentPivot.x) !== Math.round(defaultPivot.x) ||
                     Math.round(currentPivot.y) !== Math.round(defaultPivot.y);
-                  const presets = PIVOT_PRESETS[selectedLimb] || [];
+                  const presets = presetsMap[selectedLimb] || [];
 
                   // Determine symmetrical opposite limb
                   const mirrorLimbMap: Partial<Record<LimbId, LimbId>> = {

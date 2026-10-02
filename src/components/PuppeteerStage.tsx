@@ -26,6 +26,10 @@ interface PuppeteerStageProps {
   onSetStartPosition?: (limbId: LimbId) => void;
   onResetToStartPosition?: (limbId: LimbId) => void;
   startPositionFeedback?: string | null;
+  activeConfigs?: Record<LimbId, any>;
+  activePivots?: Record<LimbId, { x: number; y: number }>;
+  characterType?: 'piggy' | 'death' | 'custom';
+  onToggleCharacter?: (char: 'piggy' | 'death') => void;
 }
 
 export const PuppeteerStage: React.FC<PuppeteerStageProps> = ({
@@ -49,6 +53,10 @@ export const PuppeteerStage: React.FC<PuppeteerStageProps> = ({
   onSetStartPosition,
   onResetToStartPosition,
   startPositionFeedback,
+  activeConfigs,
+  activePivots,
+  characterType = 'piggy',
+  onToggleCharacter,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [bgTheme, setBgTheme] = useState<'studio' | 'draft' | 'grid' | 'meadow'>('studio');
@@ -65,7 +73,8 @@ export const PuppeteerStage: React.FC<PuppeteerStageProps> = ({
   const initialLimbPose = useRef<{ rotation: number; x: number; y: number }>({ rotation: 0, x: 0, y: 0 });
   const lastPointerAngle = useRef<number>(0);
 
-  const activeConfig = selectedLimb ? LIMB_CONFIGS[selectedLimb] : null;
+  const configsMap = activeConfigs || LIMB_CONFIGS;
+  const activeConfig = selectedLimb ? configsMap[selectedLimb] : null;
   const currentPivot = (selectedLimb && pivots[selectedLimb]) || (activeConfig ? activeConfig.pivot : { x: 150, y: 150 });
 
   // Reset hover state when selected limb changes
@@ -305,6 +314,38 @@ export const PuppeteerStage: React.FC<PuppeteerStageProps> = ({
           >
             {bgTheme}
           </button>
+
+          {/* Character Quick Toggle */}
+          {onToggleCharacter && (
+            <div className="flex items-center p-0.5 bg-neutral-900/90 border border-neutral-700/80 rounded-lg text-xs gap-0.5">
+              <button
+                id="stage-btn-char-piggy"
+                onClick={() => onToggleCharacter('piggy')}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                  characterType === 'piggy'
+                    ? 'bg-rose-600 text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/10'
+                }`}
+                title="Switch to Piggy Character with Piggy Rigging"
+              >
+                <span>🐷</span>
+                <span className="hidden sm:inline">Piggy</span>
+              </button>
+              <button
+                id="stage-btn-char-death"
+                onClick={() => onToggleCharacter('death')}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition-all ${
+                  characterType === 'death'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/10'
+                }`}
+                title="Switch to Death (Grim Reaper) with Skeleton Rigging"
+              >
+                <span>💀</span>
+                <span className="hidden sm:inline">Death</span>
+              </button>
+            </div>
+          )}
 
           {/* Gizmo toggle */}
           <button

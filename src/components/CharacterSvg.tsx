@@ -92,8 +92,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
           }}
           filter={!isGhost ? getSelectionFilter('footL') : undefined}
         >
-          {customSvg?.limbMarkup?.footL ? (
-            <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.footL }} />
+          {customSvg?.limbMarkup?.footL !== undefined ? (
+            customSvg.limbMarkup.footL ? (
+              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.footL }} />
+            ) : null
           ) : (
             <>
               <path
@@ -125,8 +127,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
           }}
           filter={!isGhost ? getSelectionFilter('footR') : undefined}
         >
-          {customSvg?.limbMarkup?.footR ? (
-            <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.footR }} />
+          {customSvg?.limbMarkup?.footR !== undefined ? (
+            customSvg.limbMarkup.footR ? (
+              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.footR }} />
+            ) : null
           ) : (
             <>
               <path
@@ -158,8 +162,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
           }}
           filter={!isGhost ? getSelectionFilter('body') : undefined}
         >
-          {customSvg?.limbMarkup?.body ? (
-            <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.body }} />
+          {customSvg?.limbMarkup?.body !== undefined ? (
+            customSvg.limbMarkup.body ? (
+              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.body }} />
+            ) : null
           ) : (
             <>
               <path
@@ -212,8 +218,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
           filter={!isGhost ? getSelectionFilter('head') : undefined}
         >
           {/* Head Base: Custom or Default */}
-          {customSvg?.limbMarkup?.head ? (
-            <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.head }} />
+          {customSvg?.limbMarkup?.head !== undefined ? (
+            customSvg.limbMarkup.head ? (
+              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.head }} />
+            ) : null
           ) : (
             <path
               d="M 121 103 a 42 42 0 1 1 61 1 a 36 11 0 1 1 -61 -1 z"
@@ -236,8 +244,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
             }}
             filter={!isGhost ? getSelectionFilter('earL') : undefined}
           >
-            {customSvg?.limbMarkup?.earL ? (
-              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.earL }} />
+            {customSvg?.limbMarkup?.earL !== undefined ? (
+              customSvg.limbMarkup.earL ? (
+                <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.earL }} />
+              ) : null
             ) : (
               <>
                 <path d="M 173 46 l 11 0 l 6 13 z" fill="#c00" />
@@ -268,8 +278,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
             }}
             filter={!isGhost ? getSelectionFilter('earR') : undefined}
           >
-            {customSvg?.limbMarkup?.earR ? (
-              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.earR }} />
+            {customSvg?.limbMarkup?.earR !== undefined ? (
+              customSvg.limbMarkup.earR ? (
+                <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.earR }} />
+              ) : null
             ) : (
               <>
                 <path d="M 119 52 l 17 -11 l -15 -2 z" fill="#c00" />
@@ -300,8 +312,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
             }}
             filter={!isGhost ? getSelectionFilter('eyes') : undefined}
           >
-            {customSvg?.limbMarkup?.eyes ? (
-              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.eyes }} />
+            {customSvg?.limbMarkup?.eyes !== undefined ? (
+              customSvg.limbMarkup.eyes ? (
+                <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.eyes }} />
+              ) : null
             ) : (
               <>
                 <path
@@ -333,8 +347,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
             }}
             filter={!isGhost ? getSelectionFilter('snout') : undefined}
           >
-            {customSvg?.limbMarkup?.snout ? (
-              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.snout }} />
+            {customSvg?.limbMarkup?.snout !== undefined ? (
+              customSvg.limbMarkup.snout ? (
+                <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.snout }} />
+              ) : null
             ) : (
               <>
                 <path
@@ -372,8 +388,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
           }}
           filter={!isGhost ? getSelectionFilter('handL') : undefined}
         >
-          {customSvg?.limbMarkup?.handL ? (
-            <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.handL }} />
+          {customSvg?.limbMarkup?.handL !== undefined ? (
+            customSvg.limbMarkup.handL ? (
+              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.handL }} />
+            ) : null
           ) : (
             <path
               d="M 220 160 a 18 14 0 1 1 23 0 l -6 12 l -5 -7 l -6 7 z"
@@ -397,8 +415,10 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
           }}
           filter={!isGhost ? getSelectionFilter('handR') : undefined}
         >
-          {customSvg?.limbMarkup?.handR ? (
-            <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.handR }} />
+          {customSvg?.limbMarkup?.handR !== undefined ? (
+            customSvg.limbMarkup.handR ? (
+              <g dangerouslySetInnerHTML={{ __html: customSvg.limbMarkup.handR }} />
+            ) : null
           ) : (
             <path
               d="M 79 170 a 18 14 0 1 1 23 0 l -6 12 l -5 -7 l -6 7 z"
@@ -426,7 +446,7 @@ export const CharacterSvg: React.FC<CharacterSvgProps> = ({
       <defs>
         <radialGradient id={gradId}>
           <stop offset="0%" stopColor="rgba(0,0,0,0)" />
-          <stop offset="100%" stopColor="rgba(0,0,0,0.45)" />
+          <stop offset="100%" stopColor={customSvg?.insetShadowColorStop || "rgba(0,0,0,0.45)"} />
         </radialGradient>
 
         <mask id={maskId}>

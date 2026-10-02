@@ -4,6 +4,17 @@ import {
   DEFAULT_REST_POSE,
   LIMB_CONFIGS,
   LIMB_ORDER,
+  DEATH_LIMB_CONFIGS,
+  DEATH_PIVOTS,
+  DEATH_REST_POSE,
+  DEATH_PIVOT_PRESETS,
+  DEATH_ACTIVE_LIMBS,
+  PIGGY_ACTIVE_LIMBS,
+  getCharacterConfigs,
+  getCharacterPivots,
+  getCharacterRestPose,
+  getCharacterPivotPresets,
+  getCharacterActiveLimbs,
 } from './constants/defaultCharacter';
 import { PRESET_ANIMATIONS } from './utils/presetAnimations';
 import {
@@ -32,6 +43,11 @@ import {
   loadSavedCharacterSvg,
   saveCharacterSvg,
   parseCharacterSvg,
+  getSavedCharacterType,
+  saveCurrentCharacterType,
+  loadCharacterSvgByType,
+  DEFAULT_CHARACTER_SVG,
+  DEATH_CHARACTER_SVG,
 } from './utils/customSvgManager';
 import {
   CircleDot,
@@ -47,10 +63,11 @@ import {
 const INITIAL_DURATION = 4.0;
 const INITIAL_FPS = 30;
 
-function createInitialTracks(): Record<LimbId, LayerTrack> {
+function createInitialTracks(charType: 'piggy' | 'death' = 'piggy'): Record<LimbId, LayerTrack> {
   const result: Partial<Record<LimbId, LayerTrack>> = {};
+  const configs = getCharacterConfigs(charType);
   LIMB_ORDER.forEach((limbId) => {
-    const config = LIMB_CONFIGS[limbId];
+    const config = configs[limbId];
     result[limbId] = {
       id: limbId,
       name: config.name,
@@ -67,10 +84,27 @@ function createInitialTracks(): Record<LimbId, LayerTrack> {
 }
 
 export default function App() {
-  const [tracks, setTracks] = useState<Record<LimbId, LayerTrack>>(() => {
-    // Start with clean tracks so user is walked through recording from scratch
-    return createInitialTracks();
+  // Custom SVG State (Loaded from localStorage or defaults)
+  const [customSvg, setCustomSvg] = useState<ParsedCharacterSvg>(() => loadSavedCharacterSvg());
+
+  // Character Type State ('piggy' | 'death')
+  const [activeCharacter, setActiveCharacter] = useState<'piggy' | 'death'>(() => {
+    const initialSvg = loadSavedCharacterSvg();
+    if (initialSvg.characterType === 'death') return 'death';
+    return getSavedCharacterType();
   });
+
+  const activeConfigs = useMemo(() => getCharacterConfigs(activeCharacter), [activeCharacter]);
+  const activePivots = useMemo(() => getCharacterPivots(activeCharacter), [activeCharacter]);
+  const activePivotPresets = useMemo(() => getCharacterPivotPresets(activeCharacter), [activeCharacter]);
+  const activeLimbs = useMemo(() => getCharacterActiveLimbs(activeCharacter), [activeCharacter]);
+
+  const [tracks, setTracks] = useState<Record<LimbId, LayerTrack>>(() => {
+    const initialType = getSavedCharacterType();
+    return createInitialTracks(initialType);
+  });
+  const tracksRef = useRef(tracks);
+  tracksRef.current = tracks;
 
   const [timeline, setTimeline] = useState<TimelineState>({
     currentTime: 0,
@@ -87,19 +121,10 @@ export default function App() {
   const [isSvgEditorOpen, setIsSvgEditorOpen] = useState<boolean>(false);
   const [showHelp, setShowHelp] = useState<boolean>(false);
 
-  // Custom SVG State (Loaded from localStorage or defaults)
-  const [customSvg, setCustomSvg] = useState<ParsedCharacterSvg>(() => loadSavedCharacterSvg());
-
-  const handleApplySvgCode = useCallback((newSvgCode: string) => {
-    const res = parseCharacterSvg(newSvgCode);
-    if (res.success && res.parsed) {
-      setCustomSvg(res.parsed);
-      saveCharacterSvg(newSvgCode);
-    }
-  }, []);
-
   // Limb center of motion / pivots state
-  const [pivots, setPivots] = useState<LimbPivots>(() => ({ ...DEFAULT_PIVOTS }));
+  const [pivots, setPivots] = useState<LimbPivots>(() => ({
+    ...getCharacterPivots(getSavedCharacterType()),
+  }));
   const [isEditingPivot, setIsEditingPivot] = useState<boolean>(false);
 
   const handlePivotChange = useCallback((limbId: LimbId, newPivot: { x: number; y: number }) => {
@@ -110,10 +135,113 @@ export default function App() {
   }, []);
 
   const handleResetPivot = useCallback((limbId: LimbId) => {
+    const defaultMap = getCharacterPivots(activeCharacter);
     setPivots((prev) => ({
       ...prev,
-      [limbId]: { ...(DEFAULT_PIVOTS[limbId] || { x: 150, y: 150 }) },
+      [limbId]: { ...(defaultMap[limbId] || { x: 150, y: 150 }) },
     }));
+  }, [activeCharacter]);
+
+  // Initial starting poses for each limb
+  const [initialPoses, setInitialPoses] = useState<Record<LimbId, LimbPose>>(() => ({
+    ...getCharacterRestPose(getSavedCharacterType()),
+  }));
+  const initialPosesRef = useRef(initialPoses);
+  initialPosesRef.current = initialPoses;
+
+  // Manual live overrides (when user is dragging dial or webcam is updating)
+  const manualOverrides = useRef<Partial<Record<LimbId, LimbPose>>>({});
+
+  // Character Toggle Switcher Handler (Populates rigging, pivots, rest pose, track metadata)
+  const handleToggleCharacter = useCallback((targetChar: 'piggy' | 'death') => {
+    setActiveCharacter(targetChar);
+    saveCurrentCharacterType(targetChar);
+
+    // 1. Load and parse the new character SVG
+    const newSvgParsed = loadCharacterSvgByType(targetChar);
+    setCustomSvg(newSvgParsed);
+    saveCharacterSvg(newSvgParsed.rawSvg);
+
+    // 2. Populate character rigging (pivots & rest pose)
+    const newPivots = getCharacterPivots(targetChar);
+    setPivots({ ...newPivots });
+
+    const newRestPose = getCharacterRestPose(targetChar);
+    setInitialPoses({ ...newRestPose });
+    setCurrentPose({ ...newRestPose });
+    manualOverrides.current = {};
+
+    // 3. Update track metadata (names & colors) for the character
+    const targetConfigs = getCharacterConfigs(targetChar);
+    setTracks((prev) => {
+      const next = { ...prev };
+      LIMB_ORDER.forEach((limbId) => {
+        const conf = targetConfigs[limbId];
+        if (next[limbId]) {
+          next[limbId] = {
+            ...next[limbId],
+            name: conf.name,
+            color: conf.color,
+          };
+        }
+      });
+      tracksRef.current = next;
+      return next;
+    });
+
+    // 4. Ensure selected limb is valid for the character
+    const targetLimbs = getCharacterActiveLimbs(targetChar);
+    setSelectedLimb((current) => {
+      if (current && !targetLimbs.includes(current)) {
+        return 'handR';
+      }
+      return current;
+    });
+  }, []);
+
+  const handleApplySvgCode = useCallback((newSvgCode: string) => {
+    const res = parseCharacterSvg(newSvgCode);
+    if (res.success && res.parsed) {
+      setCustomSvg(res.parsed);
+      saveCharacterSvg(newSvgCode);
+      const isDeath = res.parsed.characterType === 'death';
+      const charType: 'piggy' | 'death' = isDeath ? 'death' : 'piggy';
+      setActiveCharacter(charType);
+      saveCurrentCharacterType(charType);
+
+      // Populate rigging for this character
+      const targetPivots = getCharacterPivots(charType);
+      setPivots({ ...targetPivots });
+      const targetRest = getCharacterRestPose(charType);
+      setInitialPoses({ ...targetRest });
+      setCurrentPose({ ...targetRest });
+      manualOverrides.current = {};
+
+      const targetConfigs = getCharacterConfigs(charType);
+      setTracks((prev) => {
+        const next = { ...prev };
+        LIMB_ORDER.forEach((limbId) => {
+          const conf = targetConfigs[limbId];
+          if (next[limbId]) {
+            next[limbId] = {
+              ...next[limbId],
+              name: conf.name,
+              color: conf.color,
+            };
+          }
+        });
+        tracksRef.current = next;
+        return next;
+      });
+
+      const targetLimbs = getCharacterActiveLimbs(charType);
+      setSelectedLimb((current) => {
+        if (current && !targetLimbs.includes(current)) {
+          return 'handR';
+        }
+        return current;
+      });
+    }
   }, []);
 
   // Guided Walkthrough State (User-selectable duration, primary limb, secondary limb)
@@ -129,18 +257,8 @@ export default function App() {
   const walkthroughSecondaryRef = useRef(walkthroughSecondaryLimb);
   walkthroughSecondaryRef.current = walkthroughSecondaryLimb;
 
-  // Manual live overrides (when user is dragging dial or webcam is updating)
-  const manualOverrides = useRef<Partial<Record<LimbId, LimbPose>>>({});
-
   // Full 360 degree rotation arc unlock toggle
   const [unlock360Rotation, setUnlock360Rotation] = useState<boolean>(true);
-
-  // Initial starting poses for each limb (e.g. moved up and to the left)
-  const [initialPoses, setInitialPoses] = useState<Record<LimbId, LimbPose>>(() => ({
-    ...DEFAULT_REST_POSE,
-  }));
-  const initialPosesRef = useRef(initialPoses);
-  initialPosesRef.current = initialPoses;
 
   const [startPosFeedback, setStartPosFeedback] = useState<string | null>(null);
 
@@ -841,8 +959,9 @@ export default function App() {
 
   // Global Pose Resets
   const handleResetPose = useCallback(() => {
+    const rest = getCharacterRestPose(activeCharacter);
     if (selectedLimb) {
-      const def = { ...DEFAULT_REST_POSE[selectedLimb] };
+      const def = { ...rest[selectedLimb] };
       delete manualOverrides.current[selectedLimb];
       setInitialPoses((prev) => ({
         ...prev,
@@ -854,10 +973,10 @@ export default function App() {
       }));
     } else {
       manualOverrides.current = {};
-      setInitialPoses({ ...DEFAULT_REST_POSE });
-      setCurrentPose({ ...DEFAULT_REST_POSE });
+      setInitialPoses({ ...rest });
+      setCurrentPose({ ...rest });
     }
-  }, [selectedLimb]);
+  }, [selectedLimb, activeCharacter]);
 
   const handleMirrorPose = useCallback(() => {
     // Swap left and right limbs
@@ -904,8 +1023,12 @@ export default function App() {
         <div className="flex items-center gap-3">
           {/* App Logo & Character Tag */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-500 to-pink-400 flex items-center justify-center shadow-md">
-              <span className="text-lg">🐷</span>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-md transition-all ${
+              activeCharacter === 'death'
+                ? 'bg-gradient-to-tr from-indigo-700 to-sky-600 shadow-indigo-950'
+                : 'bg-gradient-to-tr from-rose-500 to-pink-400 shadow-rose-950'
+            }`}>
+              <span className="text-lg">{activeCharacter === 'death' ? '💀' : '🐷'}</span>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -917,9 +1040,50 @@ export default function App() {
                 </span>
               </div>
               <p className="text-[11px] text-neutral-400">
-                Multi-layer performance recording for SVG character
+                {activeCharacter === 'death'
+                  ? 'Multi-layer puppet animation for Grim Reaper Skeleton'
+                  : 'Multi-layer performance recording for SVG character'}
               </p>
             </div>
+          </div>
+
+          {/* Prominent Character Switcher Toggle */}
+          <div className="flex items-center p-0.5 bg-neutral-900 border border-neutral-700/80 rounded-xl shadow-inner gap-0.5 ml-1">
+            <button
+              id="header-btn-toggle-piggy"
+              onClick={() => handleToggleCharacter('piggy')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                activeCharacter === 'piggy'
+                  ? 'bg-rose-600 text-white shadow-sm ring-1 ring-rose-400/50'
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800'
+              }`}
+              title="Switch to Piggy Character (Classic rigged puppet)"
+            >
+              <span>🐷</span>
+              <span>Piggy</span>
+              {activeCharacter === 'piggy' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-white ml-0.5" />
+              )}
+            </button>
+            <button
+              id="header-btn-toggle-death"
+              onClick={() => handleToggleCharacter('death')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                activeCharacter === 'death'
+                  ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400/50'
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800'
+              }`}
+              title="Switch to Death (Grim Reaper skeleton with rigged limbs)"
+            >
+              <span>💀</span>
+              <span>Death</span>
+              <span className="text-[9px] uppercase font-mono px-1 py-0.2 rounded bg-indigo-900/60 text-indigo-200 border border-indigo-500/40">
+                Rigged
+              </span>
+              {activeCharacter === 'death' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-300 ml-0.5 animate-pulse" />
+              )}
+            </button>
           </div>
         </div>
 

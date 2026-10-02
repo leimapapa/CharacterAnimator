@@ -19,6 +19,7 @@ import { CharacterSvg } from './CharacterSvg';
 import { PuppetPose, LimbPivots } from '../types';
 import {
   DEFAULT_CHARACTER_SVG,
+  DEATH_CHARACTER_SVG,
   ParsedCharacterSvg,
   parseCharacterSvg,
   toggleInsetShadowInSvgCode,
@@ -157,6 +158,31 @@ export const SvgCodeModal: React.FC<SvgCodeModalProps> = ({
               </span>
             </button>
 
+            {/* Preset Character Templates */}
+            <div className="flex items-center gap-1 border-r border-neutral-800 pr-2 mr-1">
+              <span className="text-[11px] text-neutral-400 font-medium mr-1 hidden sm:inline">Templates:</span>
+              <button
+                type="button"
+                id="btn-svg-template-piggy"
+                onClick={() => setCode(DEFAULT_CHARACTER_SVG)}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700"
+                title="Load standard Piggy SVG character template"
+              >
+                <span>🐷</span>
+                <span>Piggy</span>
+              </button>
+              <button
+                type="button"
+                id="btn-svg-template-death"
+                onClick={() => setCode(DEATH_CHARACTER_SVG)}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-200 text-xs font-medium border border-indigo-700/50"
+                title="Load Grim Reaper / Death skeleton SVG template"
+              >
+                <span>💀</span>
+                <span>Death</span>
+              </button>
+            </div>
+
             {/* Reset */}
             <button
               type="button"
@@ -166,7 +192,7 @@ export const SvgCodeModal: React.FC<SvgCodeModalProps> = ({
               title="Reset code to default template"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Reset Template</span>
+              <span>Reset</span>
             </button>
 
             {/* Copy */}

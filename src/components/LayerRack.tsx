@@ -24,6 +24,9 @@ interface LayerRackProps {
   onSmoothTrack: (id: LimbId) => void;
   onUpdateTrackWeight: (id: LimbId, weight: number) => void;
   isRecording: boolean;
+  activeConfigs?: Record<LimbId, any>;
+  activeLimbs?: LimbId[];
+  characterType?: 'piggy' | 'death' | 'custom';
 }
 
 export const LayerRack: React.FC<LayerRackProps> = ({
@@ -38,31 +41,45 @@ export const LayerRack: React.FC<LayerRackProps> = ({
   onSmoothTrack,
   onUpdateTrackWeight,
   isRecording,
+  activeConfigs,
+  activeLimbs,
+  characterType = 'piggy',
 }) => {
+  const effectiveLimbs = activeLimbs || LIMB_ORDER;
+  const recordedCount = effectiveLimbs.filter((id) => (tracks[id]?.keyframes?.length || 0) > 0).length;
+
   return (
     <div className="flex flex-col h-full bg-neutral-900/90 border border-neutral-800 rounded-xl overflow-hidden backdrop-blur-md">
       {/* Header */}
       <div className="p-3 border-b border-neutral-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-sky-500" />
-          <h2 className="text-xs font-bold text-neutral-200 uppercase tracking-wider">
-            Limb Layers Rack
+          <div className={`w-2 h-2 rounded-full ${characterType === 'death' ? 'bg-indigo-400' : 'bg-sky-500'}`} />
+          <h2 className="text-xs font-bold text-neutral-200 uppercase tracking-wider flex items-center gap-1.5">
+            <span>Limb Layers</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-800 border border-neutral-700 text-neutral-300 capitalize">
+              {characterType === 'death' ? '💀 Death' : '🐷 Piggy'}
+            </span>
           </h2>
         </div>
-        <span className="text-[11px] text-neutral-500 font-mono">
-          {(Object.values(tracks) as LayerTrack[]).filter((t) => t.keyframes.length > 0).length} / 10 Recorded
+        <span className="text-[11px] text-neutral-400 font-mono">
+          {recordedCount} / {effectiveLimbs.length} Recorded
         </span>
       </div>
 
       {/* Rack Layer List */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin">
         {LIMB_ORDER.map((limbId) => {
-          const config = LIMB_CONFIGS[limbId];
+          const config = activeConfigs?.[limbId] || LIMB_CONFIGS[limbId];
+          const isLimbActive = !activeLimbs || activeLimbs.includes(limbId);
           const track = tracks[limbId];
           const isSelected = selectedLimb === limbId;
           const pose = currentPose[limbId] || { rotation: 0, x: 0, y: 0 };
           const keyframeCount = track?.keyframes?.length || 0;
           const hasData = keyframeCount > 0;
+
+          if (!isLimbActive && characterType === 'death') {
+            return null; // Hide N/A ears and snout for the Grim Reaper skeleton
+          }
 
           return (
             <div

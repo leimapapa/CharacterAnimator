@@ -175,54 +175,231 @@ export const DEFAULT_PIVOTS: Record<LimbId, { x: number; y: number }> = {
   eyes: { x: 145, y: 67 },
 };
 
-export const PIVOT_PRESETS: Partial<Record<LimbId, { label: string; x: number; y: number }[]>> = {
+export const PIGGY_ACTIVE_LIMBS: LimbId[] = [
+  'body',
+  'head',
+  'handL',
+  'handR',
+  'footL',
+  'footR',
+  'earL',
+  'earR',
+  'snout',
+  'eyes',
+];
+
+export const DEATH_ACTIVE_LIMBS: LimbId[] = [
+  'body',
+  'head',
+  'handL',
+  'handR',
+  'footL',
+  'footR',
+  'eyes',
+];
+
+export const DEATH_LIMB_CONFIGS: Record<LimbId, LimbConfig> = {
+  body: {
+    id: 'body',
+    name: 'Ribs, Spine & Robe',
+    category: 'core',
+    color: '#0284c7', // Sky blue
+    pivot: { x: 150, y: 165 },
+    baseRotation: 0,
+    rotationRange: [-45, 45],
+    xRange: [-45, 45],
+    yRange: [-40, 40],
+    description: 'Skeletal spine & robe sway, bounce, and posture.',
+  },
+  head: {
+    id: 'head',
+    name: 'Skull & Hood',
+    category: 'core',
+    color: '#ec4899', // Pink
+    pivot: { x: 150, y: 100 },
+    baseRotation: 0,
+    rotationRange: [-60, 60],
+    xRange: [-30, 30],
+    yRange: [-25, 25],
+    description: 'Skull nodding, eerie head tilt, and menacing bobbing.',
+  },
+  handL: {
+    id: 'handL',
+    name: 'Left Arm & Bone',
+    category: 'arm',
+    color: '#8b5cf6', // Purple
+    pivot: { x: 187, y: 120 },
+    baseRotation: 0,
+    rotationRange: [-180, 180],
+    xRange: [-40, 40],
+    yRange: [-40, 40],
+    description: 'Left bone arm swing, point, reach, and gestures.',
+  },
+  handR: {
+    id: 'handR',
+    name: 'Right Arm & Bone',
+    category: 'arm',
+    color: '#a855f7', // Violet
+    pivot: { x: 112, y: 120 },
+    baseRotation: 0,
+    rotationRange: [-180, 180],
+    xRange: [-40, 40],
+    yRange: [-40, 40],
+    description: 'Right bone arm swing, scythe gesture, and reach.',
+  },
+  footL: {
+    id: 'footL',
+    name: 'Left Leg & Bone',
+    category: 'leg',
+    color: '#10b981', // Emerald
+    pivot: { x: 173, y: 219 },
+    baseRotation: 0,
+    rotationRange: [-55, 55],
+    xRange: [-30, 30],
+    yRange: [-30, 20],
+    description: 'Left skeletal leg step, stride, and floating lift.',
+  },
+  footR: {
+    id: 'footR',
+    name: 'Right Leg & Bone',
+    category: 'leg',
+    color: '#059669', // Green
+    pivot: { x: 127, y: 219 },
+    baseRotation: 0,
+    rotationRange: [-55, 55],
+    xRange: [-30, 30],
+    yRange: [-30, 20],
+    description: 'Right skeletal leg step, stride, and floating lift.',
+  },
+  eyes: {
+    id: 'eyes',
+    name: 'Glowing Blue Eyes',
+    category: 'face',
+    color: '#38bdf8', // Light blue
+    pivot: { x: 150, y: 63 },
+    baseRotation: 0,
+    rotationRange: [-25, 25],
+    xRange: [-15, 15],
+    yRange: [-12, 12],
+    description: 'Eerie blue glowing eye sockets gaze and glaring shift.',
+  },
+  earL: {
+    id: 'earL',
+    name: 'Left Ear (N/A)',
+    category: 'face',
+    color: '#f43f5e',
+    pivot: { x: 175, y: 55 },
+    baseRotation: 0,
+    rotationRange: [-35, 35],
+    xRange: [-15, 15],
+    yRange: [-15, 15],
+    description: 'Not present on Grim Reaper skeleton.',
+  },
+  earR: {
+    id: 'earR',
+    name: 'Right Ear (N/A)',
+    category: 'face',
+    color: '#e11d48',
+    pivot: { x: 125, y: 55 },
+    baseRotation: 0,
+    rotationRange: [-35, 35],
+    xRange: [-15, 15],
+    yRange: [-15, 15],
+    description: 'Not present on Grim Reaper skeleton.',
+  },
+  snout: {
+    id: 'snout',
+    name: 'Snout (N/A)',
+    category: 'face',
+    color: '#f97316',
+    pivot: { x: 150, y: 80 },
+    baseRotation: 0,
+    rotationRange: [-25, 25],
+    xRange: [-20, 20],
+    yRange: [-15, 15],
+    description: 'Not present on Grim Reaper skeleton.',
+  },
+};
+
+export const DEATH_PIVOTS: Record<LimbId, { x: number; y: number }> = {
+  body: { x: 150, y: 165 },
+  head: { x: 150, y: 100 },
+  handL: { x: 187, y: 120 },
+  handR: { x: 112, y: 120 },
+  footL: { x: 173, y: 219 },
+  footR: { x: 127, y: 219 },
+  eyes: { x: 150, y: 63 },
+  earL: { x: 175, y: 55 },
+  earR: { x: 125, y: 55 },
+  snout: { x: 150, y: 80 },
+};
+
+export const DEATH_REST_POSE: PuppetPose = {
+  body: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  head: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  handL: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  handR: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  footL: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  footR: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  eyes: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  earL: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  earR: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+  snout: { rotation: 0, x: 0, y: 0, scaleX: 1, scaleY: 1 },
+};
+
+export const DEATH_PIVOT_PRESETS: Partial<Record<LimbId, { label: string; x: number; y: number }[]>> = {
   handR: [
-    { label: 'Shoulder Joint', x: 90, y: 170 },
-    { label: 'Mid Arm (Elbow)', x: 65, y: 170 },
-    { label: 'Hand Tip', x: 38, y: 170 },
+    { label: 'Shoulder Joint', x: 112, y: 120 },
+    { label: 'Mid Arm (Elbow)', x: 112, y: 145 },
+    { label: 'Hand Bone Tip', x: 112, y: 175 },
   ],
   handL: [
-    { label: 'Shoulder Joint', x: 231, y: 162 },
-    { label: 'Mid Arm (Elbow)', x: 231, y: 190 },
-    { label: 'Hand Tip', x: 231, y: 220 },
+    { label: 'Shoulder Joint', x: 187, y: 120 },
+    { label: 'Mid Arm (Elbow)', x: 187, y: 145 },
+    { label: 'Hand Bone Tip', x: 187, y: 175 },
   ],
   head: [
-    { label: 'Neck Base', x: 150, y: 103 },
-    { label: 'Head Center', x: 150, y: 75 },
-    { label: 'Crown / Top', x: 150, y: 40 },
+    { label: 'Neck Base', x: 150, y: 100 },
+    { label: 'Skull Center', x: 150, y: 75 },
+    { label: 'Crown / Hood Top', x: 150, y: 48 },
   ],
   body: [
-    { label: 'Waist (Default)', x: 150, y: 175 },
-    { label: 'Chest Center', x: 150, y: 145 },
-    { label: 'Hips / Base', x: 150, y: 215 },
-  ],
-  footL: [
-    { label: 'Hip / Joint', x: 175, y: 240 },
-    { label: 'Mid Leg', x: 175, y: 255 },
-    { label: 'Hoof / Tip', x: 175, y: 270 },
+    { label: 'Pelvis / Base', x: 150, y: 179 },
+    { label: 'Ribs Center', x: 150, y: 145 },
+    { label: 'Upper Spine', x: 150, y: 115 },
   ],
   footR: [
-    { label: 'Hip / Joint', x: 125, y: 240 },
-    { label: 'Mid Leg', x: 125, y: 255 },
-    { label: 'Hoof / Tip', x: 125, y: 270 },
+    { label: 'Hip Joint', x: 127, y: 219 },
+    { label: 'Mid Leg / Knee', x: 127, y: 240 },
+    { label: 'Foot Bone', x: 112, y: 260 },
   ],
-  earL: [
-    { label: 'Ear Root', x: 175, y: 55 },
-    { label: 'Ear Mid', x: 185, y: 40 },
-    { label: 'Ear Tip', x: 195, y: 25 },
-  ],
-  earR: [
-    { label: 'Ear Root', x: 125, y: 55 },
-    { label: 'Ear Mid', x: 115, y: 40 },
-    { label: 'Ear Tip', x: 105, y: 25 },
-  ],
-  snout: [
-    { label: 'Nose Bridge', x: 153, y: 77 },
-    { label: 'Snout Center', x: 153, y: 92 },
-    { label: 'Tip', x: 153, y: 102 },
+  footL: [
+    { label: 'Hip Joint', x: 173, y: 219 },
+    { label: 'Mid Leg / Knee', x: 173, y: 240 },
+    { label: 'Foot Bone', x: 188, y: 260 },
   ],
   eyes: [
-    { label: 'Pupil Center', x: 145, y: 67 },
-    { label: 'Upper Brow', x: 145, y: 58 },
+    { label: 'Eye Socket Center', x: 150, y: 63 },
   ],
 };
+
+export function getCharacterConfigs(characterType: 'piggy' | 'death' | string): Record<LimbId, LimbConfig> {
+  return characterType === 'death' ? DEATH_LIMB_CONFIGS : LIMB_CONFIGS;
+}
+
+export function getCharacterPivots(characterType: 'piggy' | 'death' | string): Record<LimbId, { x: number; y: number }> {
+  return characterType === 'death' ? DEATH_PIVOTS : DEFAULT_PIVOTS;
+}
+
+export function getCharacterRestPose(characterType: 'piggy' | 'death' | string): PuppetPose {
+  return characterType === 'death' ? { ...DEATH_REST_POSE } : { ...DEFAULT_REST_POSE };
+}
+
+export function getCharacterPivotPresets(characterType: 'piggy' | 'death' | string): Partial<Record<LimbId, { label: string; x: number; y: number }[]>> {
+  return characterType === 'death' ? DEATH_PIVOT_PRESETS : PIVOT_PRESETS;
+}
+
+export function getCharacterActiveLimbs(characterType: 'piggy' | 'death' | string): LimbId[] {
+  return characterType === 'death' ? DEATH_ACTIVE_LIMBS : PIGGY_ACTIVE_LIMBS;
+}
+
